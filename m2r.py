@@ -437,14 +437,14 @@ def hplot(h, p, n=30, m = 500, xbound = [-2,2], ybound = [-2,2], figsize= 10, ax
 
         Parameters:
             h (function): h of desired graph
-            n (int): Number of field lines
+            p (float): p-value of annulus
+            *n (int): Number of field lines
             *xbound (list): Boundary of x in form of [xmin, xmax]
             *ybound (list): Boundary of x in form of [xmin, xmax]
             *figsize (float): Desired size of plot
             *ax (bool): Hides axis if False
             *shift (bool): Shifts the branch cut of log if True
             *theta (float): Argument of new branch cut
-            *s (float): Scaling factor of Log(z)
     
         Return 
             graph (plot): Plot of field lines
@@ -486,14 +486,14 @@ def hplot(h, p, n=30, m = 500, xbound = [-2,2], ybound = [-2,2], figsize= 10, ax
     if not ax:
         plt.axis('off')
 
-def wplot(w, n, p, m=0, xbound = [-2,2], ybound = [-2,2], figsize=10, kn=1000, km=1000, ax=True):
+def wplot(w, p, n=30, m=0, xbound = [-2,2], ybound = [-2,2], figsize=10, kn=1000, km=1000, ax=True):
     '''
         Generates plot of field lines from transformation of annulus.
 
             Parameter:
                 w (function): Transformation function
-                n (int): Number of electric field lines
                 p (float): p-value of annulus
+                *n (int): Number of electric field lines
                 *m (int): Number of potential lines other than the two electrode lines
                 *xbound (list): Boundary of x in form of [xmin, xmax]
                 *ybound (list): Boundary of x in form of [xmin, xmax]
