@@ -431,7 +431,7 @@ def ceffc(f1, f2, val, d1=1, F0=[0,1], n=2,m=2,mind=1, maxd=100, k=100):
         pval += [x[1]]
     plt.plot(dval, -2*np.pi/np.log(np.array(pval)))
 
-def hplot(h, n=30, m = 500, xbound = [-2,2], ybound = [-2,2], figsize= 10, ax=True, shift=False, theta=np.pi/2, s=1/np.log(p)):
+def hplot(h, p, n=30, m = 500, xbound = [-2,2], ybound = [-2,2], figsize= 10, ax=True, shift=False, theta=np.pi/2):
     '''
         Generates plot of feild lines from h
 
@@ -465,9 +465,9 @@ def hplot(h, n=30, m = 500, xbound = [-2,2], ybound = [-2,2], figsize= 10, ax=Tr
     if shift:
         if -np.pi<theta<np.pi:
             if theta>0:
-                Im = np.where(Im>=theta/s, Im-2*np.pi*np.abs(s), Im)
+                Im = np.where(Im>=theta/s, Im-2*np.pi/np.abs(np.log(p)), Im)
             else:
-                Im = np.where(Im<=theta/s, Im+2*np.pi*np.abs(s), Im)
+                Im = np.where(Im<=theta/s, Im+2*np.pi/np.abs(np.log(p)), Im)
         else:
             raise Exception('invalid theta')
 
