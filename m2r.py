@@ -402,7 +402,7 @@ def cont(f1, f2, d2, val, d1=1, F0=[0,1], n=10, m=10):
         F = [i, F0[1]]
         x = newt2(f1, f2, F, x)
 
-    t = np.linspace((F0[1]+d2)/m, d, m)
+    t = np.linspace((F0[1]+d2)/m, d2, m)
     for i in t:
         F = [d1, i]
         x = newt2(f1, f2, F, x)
