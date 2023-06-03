@@ -178,7 +178,7 @@ def C(p, eps=1e-10):  #C-value in wA
         Approximates C in wA. 
         
             Parameter: 
-                p (float): p-value (s) 
+                p : p-value (s) 
                 *eps (float): Desired error bound 
 
             Return: 
@@ -203,8 +203,8 @@ def P(z,p, eps=1e-10):  #P-value in wA
     Approximates P in wA. 
 
         Parameters: 
-            z (float): z-value(s) 
-            p (float): p-value(s) 
+            z : z-value(s) 
+            p : p-value(s) 
             *eps (float): Desired error bound 
 
         Return:  
@@ -241,9 +241,9 @@ def wA(z,a,p, eps=1e-10):  #prime function of annulus
     Approximates wA. 
 
         Parameters: 
-            z (float): z-value(s) 
-            a (float): a-value(s) 
-            p (float): p-value(s) 
+            z : z-value(s) 
+            a : a-value(s) 
+            p : p-value(s) 
             *eps (float): Desired error bound 
 
         Return:  
@@ -257,7 +257,7 @@ def diff1(f1, val):
         
             Parameter: 
                 f1 (function): Function to differentiate  
-                val (float): Point(s) of evaluation 
+                val : Point(s) of evaluation 
             
             Return: 
                 derivative (float/array): Derivative of f1 at val with the same type as val 
@@ -272,7 +272,7 @@ def diff2(f1, f2, val, method='l'):  #Jacobean matrix, set method='a' if val is 
             Parameters: 
                 f1 (function): First function 
                 f2 (function): Second function 
-                val (list/array): Point(s) of evaluation 
+                val : Point(s) of evaluation 
                 *method (string): Set method = 'a' if val is an array 
 
             Return:  
@@ -301,8 +301,8 @@ def newt1(f1, F, val, eps=1e-10, n=50):
 
         Parameters: 
             f1 (function): Function of equation 
-            F (float): Desired output(s) of f1 
-            val (float): Point(s) of initial guess 
+            F : Desired output(s) of f1 
+            val : Point(s) of initial guess 
             *eps (float): Desired error bound 
 
         Return:  
@@ -333,8 +333,8 @@ def newt2(f1, f2, F, val, eps=1e-10, n=100, method='l'):
         Parameters: 
             f1 (function): First function 
             f2 (function): Second function 
-            F (list): Desired output(s) of f1, f2 in form of [F1, F2]     
-            val (list): Point(s) of initial guess in form of [val1, val2] 
+            F : Desired output(s) of f1, f2 in form of [F1, F2]     
+            val : Point(s) of initial guess in form of [val1, val2] 
             *eps (float): Desired error bound 
             *method (string): if method = 'a' then F and val must be arrays 
 
