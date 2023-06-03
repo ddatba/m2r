@@ -402,7 +402,7 @@ def cont(f1, f2, d2, val, d1=1, F0=[0,1], n=10, m=10):
         F = [i, F0[1]]
         x = newt2(f1, f2, F, x)
 
-    t = np.linspace((F0[1]+d2)/m, d2, m)
+    t = np.linspace(((m-1)*F0[1]+d2)/m, d2, m)
     for i in t:
         F = [d1, i]
         x = newt2(f1, f2, F, x)
@@ -473,14 +473,14 @@ def ceffc(f1, f2, val, d1=1, F0=[0,1], n=2,m=2,mind=1, maxd=100, k=100):
     else:
         t = np.linspace(((m-1)*F0[1]+mind)/m, mind, m)
         for j in t:
-            F = [1, j]
+            F = [d1, j]
             x = newt2(f1, f2, F, x)  
         pval += [x[1]]
     
     for i in range(k-1):
         t = np.linspace(((m-1)*dval[i]+dval[i+1])/m, dval[i+1], m)
         for j in t:
-            F = [1, j]
+            F = [d1, j]
             x = newt2(f1, f2, F, x)  
         pval += [x[1]]
     plt.plot(dval, -2*np.pi/np.log(np.array(pval)))
