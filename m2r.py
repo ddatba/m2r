@@ -174,6 +174,16 @@ def sigmoid_d(dual_number):
         return 1 / (1 + np.exp(-dual_number))
 
 def C(p, eps=1e-10):  #C-value in wA
+    '''
+        Approximates C in wA. 
+        
+            Parameter: 
+                p (float): p-value (s) 
+                *eps (float): Desired error bound 
+
+            Return: 
+                estimate (float/dual/array): Estimate of C at p with the same type as p 
+    '''
     if np.all(isinstance(p, Dual)):
         q = p.real
     else:
@@ -189,6 +199,17 @@ def C(p, eps=1e-10):  #C-value in wA
         raise Exception('invalid p')
 
 def P(z,p, eps=1e-10):  #P-value in wA
+    '''
+    Approximates P in wA. 
+
+        Parameters: 
+            z (float): z-value(s) 
+            p (float): p-value(s) 
+            *eps (float): Desired error bound 
+
+        Return:  
+            estimate (float/dual/array): Estimate of P at z, p with the same type as z and p 
+    '''
     zval = z
     if np.all(isinstance(z, Dual)):
         Z = zval.real
@@ -216,13 +237,47 @@ def P(z,p, eps=1e-10):  #P-value in wA
         raise Exception('invalid p')
     
 def wA(z,a,p, eps=1e-10):  #prime function of annulus
+    '''
+    Approximates wA. 
+
+        Parameters: 
+            z (float): z-value(s) 
+            a (float): a-value(s) 
+            p (float): p-value(s) 
+            *eps (float): Desired error bound 
+
+        Return:  
+            estimate (float/dual/array): Estimate of P at z, a, p with the same type as z, a and p 
+    '''
     return -a*P(z/a,p,eps**2)/C(p, eps**2)
 
 def diff1(f1, val):
+    '''
+        Differentiates f1 at val. 
+        
+            Parameter: 
+                f1 (function): Function to differentiate  
+                val (float): Point(s) of evaluation 
+            
+            Return: 
+                derivative (float/array): Derivative of f1 at val with the same type as val 
+    '''
     x = f1(Dual(real=val, dual={'1': 1}))
     return x.dual['1']
 
 def diff2(f1, f2, val, method='l'):  #Jacobean matrix, set method='a' if val is an array
+    '''
+        Determine the Jacobian matrix of f1 and f2. 
+
+            Parameters: 
+                f1 (function): First function 
+                f2 (function): Second function 
+                val (list/array): Point(s) of evaluation 
+                *method (string): Set method = 'a' if val is an array 
+
+            Return:  
+                matrix(es) (array): Jacobian matrix(es) 
+    '''
     if method == 'l':
         n = len(val)
         x = []
@@ -246,8 +301,8 @@ def newt1(f1, F, val, eps=1e-10, n=50):
 
         Parameters: 
             f1 (function): Function of equation 
-            F (float/array): Desired output(s) of f1 
-            val (float/array): Point(s) of initial guess 
+            F (float): Desired output(s) of f1 
+            val (float): Point(s) of initial guess 
             *eps (float): Desired error bound 
 
         Return:  
@@ -260,7 +315,7 @@ def newt1(f1, F, val, eps=1e-10, n=50):
     delta = f/df
     nval = val
     #loop
-    while np.any(abs(delta)>=err) and m>0:
+    while np.any(abs(delta)>=eps) and m>0:
         nval = nval + delta
         df = diff1(f1, nval)
         f = F-f1(nval)
@@ -278,8 +333,8 @@ def newt2(f1, f2, F, val, eps=1e-10, n=100, method='l'):
         Parameters: 
             f1 (function): First function 
             f2 (function): Second function 
-            F (list/array): Desired output(s) of f1, f2 in form of [F1, F2]     
-            val (list/array): Point(s) of initial guess in form of [val1, val2] 
+            F (list): Desired output(s) of f1, f2 in form of [F1, F2]     
+            val (list): Point(s) of initial guess in form of [val1, val2] 
             *eps (float): Desired error bound 
             *method (string): if method = 'a' then F and val must be arrays 
 
@@ -294,7 +349,7 @@ def newt2(f1, f2, F, val, eps=1e-10, n=100, method='l'):
         delta = np.linalg.solve(df, f)
         nval = np.array(val)
         #loop
-        while np.any(abs(delta)>=err) and m>0:
+        while np.any(abs(delta)>=eps) and m>0:
             nval = nval + delta
             df = diff2(f1, f2, nval)
             f = np.array([-f1(*nval), -f2(*nval)])+np.array(F)
@@ -311,7 +366,7 @@ def newt2(f1, f2, F, val, eps=1e-10, n=100, method='l'):
         delta = np.linalg.solve(df, f)
         nval = np.array(val)
         #loop
-        while np.any(abs(delta)>=err) and m>0:
+        while np.any(abs(delta)>=eps) and m>0:
             nval = nval + delta
             df = diff2(f1, f2, nval, method = 'a')
             f = np.array([-f1(*nval.T), -f2(*nval.T)]).T+np.array(F)
@@ -360,14 +415,13 @@ def ceffn(f1, f2, fd = lambda D : [D,D+1], fval = lambda D : [D, 1/2+0*D], mind=
 
             Parameter: 
                 f1 (function): First function 
-            f2 (function): Second function 
-            *fd (function): Function of d in form of [fd1, fd2] 
-            *fval (function): Function of d for initial guess in form of [fval1, fval2] 
-            *mind (float): Minimum d of graph 
-            *maxd (float): Maximum d of graph 
-            *m (int): Number of steps between mind and maxd 
-            *method (string): if method = 'l' then list would be used instead of array 
-        **note: fd1, fd2, fval1, fval2 must all contain variable d i.e. 0*d 
+                f2 (function): Second function 
+                *fd (function): Function of d in form of [fd1, fd2] 
+                *fval (function): Function of d for initial guess in form of [fval1, fval2] 
+                *mind (float): Minimum d of graph 
+                *maxd (float): Maximum d of graph 
+                *m (int): Number of steps between mind and maxd 
+                *method (string): if method = 'l' then list would be used instead of array 
 
         Return: 
             graph (plot): Plot of ceff over d 
