@@ -199,7 +199,7 @@ def P(z,p, eps=1e-10):  #P-value in wA
     else:
         q = p
     if np.any(Z==0):
-        if type(Z,np.ndarray):
+        if np.all(isinstance(Z,np.ndarray)):
             raise Exception('z=0 unsupported for array')  
         elif q==0:
             return 1
