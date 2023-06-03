@@ -202,7 +202,7 @@ def P(z,p, eps=1e-10):  #P-value in wA
         if np.all(isinstance(Z,np.ndarray)):
             raise Exception('z=0 unsupported for array')  
         elif q==0:
-            return 1
+            return 1 - z
         else:
             raise Exception('z=0 is invalid') 
     if np.all(np.abs(q)<1):
