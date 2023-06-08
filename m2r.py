@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 
 
 class Dual:
@@ -194,7 +195,7 @@ def C(p, eps=1e-10):  #C-value in wA
         while p**(2*n)>=eps:
             c *= (1-p**(2*n))**2
             n +=1
-        return c
+        return c*(1-p**(2*n))**2
     else:
         raise Exception('invalid p')
 
@@ -210,11 +211,10 @@ def P(z,p, eps=1e-10):  #P-value in wA
         Return:  
             estimate (float/dual/array): Estimate of P at z, p with the same type as z and p 
     '''
-    zval = z
     if np.all(isinstance(z, Dual)):
-        Z = zval.real
+        Z = z.real
     else:
-        Z = zval
+        Z = z
     if np.all(isinstance(p, Dual)):
         q = p.real
     else:
@@ -228,11 +228,11 @@ def P(z,p, eps=1e-10):  #P-value in wA
             raise Exception('z=0 is invalid') 
     if np.all(np.abs(q)<1):
         n = 2
-        a = (1-zval*p**2)*(1-(p**2)/zval)
+        a = (1-z*p**2)*(1-(p**2)/z)
         while np.any(np.abs((Z+1/Z)*q**(2*n)-q**(4*n))>=eps):
-            a *= (1-zval*p**(2*n))*(1-(p**(2*n))/zval)
+            a *= (1-z*p**(2*n))*(1-(p**(2*n))/z)
             n +=1
-        return (1-z)*a
+        return (1-z)*a*(1-z*p**(2*n))*(1-(p**(2*n))/z)
     else:
         raise Exception('invalid p')
     
@@ -396,17 +396,39 @@ def cont(f1, f2, d2, val, d1=1, F0=[0,1], n=10, m=10):
         Return:  
         estimate (float): Estimate of solution 
     '''
-    s = np.linspace(((n-1)*F0[0]+d1)/n,d1,n)
+    s = np.linspace(((m-1)*F0[1]+d2)/m,d2,m)
     x = val
     for i in s:
-        F = [i, F0[1]]
+        F = [F0[0], i]
         x = newt2(f1, f2, F, x)
-
-    t = np.linspace(((m-1)*F0[1]+d2)/m, d2, m)
+    t = np.linspace(((n-1)*F0[0]+d1)/n, d1, n)
     for i in t:
-        F = [d1, i]
+        F = [i, d2]
         x = newt2(f1, f2, F, x)
+    return x
 
+def cont2(f1, f2, d2, val, d1=1, F0=[0,1], n=100): 
+    '''
+        Continuation method for solving f1(x)=d1 and f2(x)=d2. 
+
+        Parameters: 
+            f1 (function): First function 
+            f2 (function): Second function 
+            d2 : Desired output of f2 
+            val : Point of initial guess in form of [val1, val2] 
+            *d1 : Desired output of f1 
+            *F0 : Output of initial guess in form of [f1(val), f2(val)] 
+            *n (int): Number of iterations
+
+        Return:  
+        estimate (float): Estimate of solution 
+    '''
+    s = np.linspace(((n-1)*F0[1]+d2)/n, d2, n)
+    t = np.linspace(((n-1)*F0[0]+d1)/n, d1, n)
+    x = val
+    for i in range(n):
+        F = [t[i], s[i]]
+        x = newt2(f1, f2, F, x)
     return x
 
 def ceffn(f1, f2, fd = lambda D : [D,D+1], fval = lambda D : [D, 1/2+0*D], mind=1, maxd=10000, m=1000, method='a'):
@@ -540,14 +562,14 @@ def hplot(h, p, n=30, m = 500, xbound = [-2,2], ybound = [-2,2], figsize= 10, ax
     if not ax:
         plt.axis('off')
 
-def wplot(w, p, n=30, m=0, xbound = [-2,2], ybound = [-2,2], figsize=10, kn=1000, km=1000, ax=True):
+def wplot(w, n, p, m=500, xbound = [-2,2], ybound = [-2,2], figsize=10, kn=500, km=500, ax=True, lab=True, lw=2, g=True, v2c='black'):
     '''
         Generates plot of field lines from transformation of annulus.
 
             Parameter:
                 w (function): Transformation function
+                n (int): Number of electric field lines
                 p (float): p-value of annulus
-                *n (int): Number of electric field lines
                 *m (int): Number of potential lines other than the two electrode lines
                 *xbound (list): Boundary of x in form of [xmin, xmax]
                 *ybound (list): Boundary of x in form of [xmin, xmax]
@@ -555,27 +577,124 @@ def wplot(w, p, n=30, m=0, xbound = [-2,2], ybound = [-2,2], figsize=10, kn=1000
                 *kn (int): Number of samples used for field lines (for smoothness)
                 *km (int): Number of samples used for potential lines (for smoothness)
                 *ax (bool): Display axis if True
+                *lab (bool): Display labels if True
+                *lw (float): Linewidth of potential line
+                *g (bool): Grey if True
+                *v2c (string): Colour of the 0 potential line
     
             Return:
                 graph (plot): Plot of feild lines
     '''
+    cmap = matplotlib.colormaps.get_cmap('Spectral')
+
     t = np.linspace(0,2*np.pi,n, endpoint=False)
     r = np.linspace(p,1,kn)
+    t2 = np.linspace(0,2*np.pi,km, endpoint=False)
+    r2 = np.linspace(p,1,m+2)
+    b = np.linspace(0,1,m+2)
+
+    if g:
+        color = (m+2)*['gainsboro']
+        lval = [0.5]+m*[lw]+[0.5]
+    else:
+        color = [cmap(i) for i in b]
+        lval = (m+2)*[lw]
+
     plt.figure(figsize=[figsize,figsize])
+
+    for i in range(m+2):
+        a = r2[i]*np.cos(t2)+r2[i]*np.sin(t2)*1j
+        k=w(a)
+        plt.plot(k.real,k.imag, color=color[i],linewidth=lval[i])
     for i in t:
         a = r*np.cos(i)+r*np.sin(i)*1j
         k=w(a)
         plt.plot(k.real,k.imag, color='black')
 
-    t2 = np.linspace(0,2*np.pi,km)
-    r2 = np.linspace(p,1,m+2)
-    color = ['red']+m*['black']+['blue']
-    for i in range(m+2):
-        a = r2[i]*np.cos(t2)+r2[i]*np.sin(t2)*1j
-        k=w(a)
-        plt.plot(k.real,k.imag, color=color[i])
+    if lab:
+        a1 = p*np.cos(t2)+p*np.sin(t2)*1j
+        k1=w(a1)
+        a2 = np.cos(t2)+np.sin(t2)*1j
+        k2=w(a2)
+        if g:
+            plt.plot(k1.real,k1.imag, color='red',label=r'$\Phi = 1$')
+            plt.plot(k2.real,k2.imag, color=v2c ,label=r'$\Phi = 0$')
+        else:
+            plt.plot(k1.real,k1.imag, color='red',label=r'$\Phi = 1$',linewidth=lw+1)
+            plt.plot(k2.real,k2.imag, color='dodgerblue',label=r'$\Phi = 0$',linewidth=lw+1)
 
+    plt.legend()
     plt.axis('scaled')
     plt.axis(xbound+ybound)
     if not ax:
         plt.axis('off')
+        
+def wplot2(w, n, p, m=500, xbound = [-2,2], ybound = [-2,2], figsize=10, kn=500, km=500, ax=True, lab=True, lw=2, g=True, v2c='black'):
+    '''
+        Generates plot of field lines from transformation of annulus.
+
+            Parameter:
+                w (function): Transformation function
+                n (int): Number of electric field lines
+                p (float): p-value of annulus
+                *m (int): Number of potential lines other than the two electrode lines
+                *xbound (list): Boundary of x in form of [xmin, xmax]
+                *ybound (list): Boundary of x in form of [xmin, xmax]
+                *figsize (float): Desired size of the plot
+                *kn (int): Number of samples used for field lines (for smoothness)
+                *km (int): Number of samples used for potential lines (for smoothness)
+                *ax (bool): Display axis if True
+                *lab (bool): Display labels if True
+                *lw (float): Linewidth of potential line
+                *g (bool): Grey if True
+                *v2c (string): Colour of the 0 potential line
+    
+            Return:
+                graph (plot): Plot of feild lines
+    '''
+    cmap = matplotlib.colormaps.get_cmap('Spectral')
+    t = np.linspace(0,2*np.pi,n, endpoint=False)
+    r = np.linspace(p,1/p,kn)
+    plt.figure(figsize=[figsize,figsize])
+    
+
+    t2 = np.linspace(0,2*np.pi,km)
+    r2 = np.linspace(p,1/p,m+2)
+    b = np.linspace(0,1/p,m+2)
+    if g:
+        color = (m+2)*['gainsboro']
+        lval = [0.5]+(m)*[lw]+[0.5]
+    else:
+        color = [cmap(i) for i in b]
+        lval = (m+2)*[lw]
+
+    for i in range(m+2):
+        a = r2[i]*np.cos(t2)+r2[i]*np.sin(t2)*1j
+        k=w(a)
+        plt.plot(k.real,k.imag, color=color[i],linewidth=lval[i])
+    for i in t:
+        a = r*np.cos(i)+r*np.sin(i)*1j
+        k=w(a)
+        plt.plot(k.real,k.imag, color='black')
+    if lab:
+        a1 = p*np.cos(t2)+p*np.sin(t2)*1j
+        k1=w(a1)
+        a2 = np.cos(t2)+np.sin(t2)*1j
+        k2=w(a2)
+        a3 = np.cos(t2)/p+np.sin(t2)*1j/p
+        k3= w(a3) 
+        if g:
+            plt.plot(k1.real,k1.imag, color='red',label=r'$\Phi = 1$')
+            plt.plot(k2.real,k2.imag, color=v2c ,label=r'$\Phi = 0$')
+            plt.plot(k3.real,k3.imag, color='purple' ,label=r'$\Phi = -1$')
+        else:
+            plt.plot(k1.real,k1.imag, color='red',label=r'$\Phi = 1$',linewidth=lw+1)
+            plt.plot(k2.real,k2.imag, color='dodgerblue',label=r'$\Phi = 0$',linewidth=lw+1)
+            plt.plot(k3.real,k3.imag, color='purple' ,label=r'$\Phi = -1$',linewidth=lw+1)
+
+    plt.legend()
+    plt.axis('scaled')
+    plt.axis(xbound+ybound)
+    if not ax:
+        plt.axis('off')
+      
