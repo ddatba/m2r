@@ -587,7 +587,7 @@ def wplot(w, n, p, m=500, xbound = [-2,2], ybound = [-2,2], figsize=10, kn=500, 
     '''
     cmap = matplotlib.colormaps.get_cmap('Spectral')
 
-    t = np.linspace(0,2*np.pi,n)
+    t = np.linspace(0,2*np.pi,n, endpoint=False)
     r = np.linspace(p,1,kn)
     t2 = np.linspace(0,2*np.pi,km)
     r2 = np.linspace(p,1,m+2)
