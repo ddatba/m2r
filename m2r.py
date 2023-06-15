@@ -344,15 +344,15 @@ def newt2(f1, f2, F, val, eps=1e-10, n=100, method='l'):
     m = n
     if method == 'l':
         #initialisation
-        df = diff2(f1, f2, val)
-        f = np.array([-f1(*val), -f2(*val)])+np.array(F)
+        df = diff2(f1, f2, val).real
+        f = np.array([-f1(*val).real, -f2(*val).real])+np.array(F)
         delta = np.linalg.solve(df, f)
         nval = np.array(val)
         #loop
         while np.any(abs(delta)>=eps) and m>0:
             nval = nval + delta
-            df = diff2(f1, f2, nval)
-            f = np.array([-f1(*nval), -f2(*nval)])+np.array(F)
+            df = diff2(f1, f2, nval).real
+            f = np.array([-f1(*nval).real, -f2(*nval).real])+np.array(F)
             delta = np.linalg.solve(df, f)
             m -= 1
         if m>0:
