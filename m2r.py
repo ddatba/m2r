@@ -407,7 +407,7 @@ def cont(f1, f2, d2, val, d1=1, F0=[0,1], n=10, m=10):
         x = newt2(f1, f2, F, x)
     return x
 
-def cont2(f1, f2, d2, val, d1=1, F0=[0,1], n=100): 
+def cont2(f1, f2, d2, val, d1=1, n=100): 
     '''
         Continuation method for solving f1(x)=d1 and f2(x)=d2. 
 
@@ -423,6 +423,7 @@ def cont2(f1, f2, d2, val, d1=1, F0=[0,1], n=100):
         Return:  
         estimate (float): Estimate of solution 
     '''
+    F0 = [f1(*val),f2(*val)]
     s = np.linspace(((n-1)*F0[1]+d2)/n, d2, n)
     t = np.linspace(((n-1)*F0[0]+d1)/n, d1, n)
     x = val
